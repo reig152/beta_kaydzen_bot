@@ -13,6 +13,8 @@ from app.config import env
 # Application definition
 INSTALLED_APPS: list[str] = [
     "app.apps.core",
+    "app.apps.handling_concerns",
+    "app.apps.users",
 ]
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -23,9 +25,9 @@ DEBUG = env("DEBUG", cast=bool, default=False)
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
-LANGUAGE_CODE = env("LANGUAGE_CODE", cast=str, default="en-us")
+LANGUAGE_CODE = env("LANGUAGE_CODE", cast=str, default="ru-ru")
 
-TIME_ZONE = env("TIME_ZONE", cast=str, default="UTC")
+TIME_ZONE = env("TIME_ZONE", cast=str, default="Europe/Moscow")
 
 USE_I18N = env("USE_I18N", cast=bool, default=True)
 

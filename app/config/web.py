@@ -80,3 +80,5 @@ AUTH_PASSWORD_VALIDATORS = [
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "static"
+
+AUTH_USER_MODEL = 'users.CustomUser'

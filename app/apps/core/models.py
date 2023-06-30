@@ -12,3 +12,6 @@ class TGUser(models.Model):
 
     class Meta:
         db_table = "tg_user"
+    
+    def __str__(self) -> str:
+        return self.username

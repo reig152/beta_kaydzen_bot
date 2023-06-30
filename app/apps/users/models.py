@@ -2,42 +2,30 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 
-
-CHOICES_ROLE = (
-    ('user', 'user'),
-    ('moderator', 'moderator'),
-    ('admin', 'admin'),
-    ('kaizen_admin', 'kaizen_admin')
-)
+from app.apps.companies.models import Company
 
 
 class CustomUser(AbstractUser):
     """Модель пользователя с учетом добавления ролей"""
-    name = models.TextField(
-        null=True,
-        blank=True,
-        verbose_name="Имя пользователя"
-    )
-    surname = models.TextField(
-        null=True,
-        blank=True,
-        verbose_name="Фамилия пользователя"
-    )
-    username = models.CharField(
+    telegram_username = models.CharField(
         unique=True,
+        null=True,
+        blank=True,
         max_length=40,
         verbose_name="Telegram username"
     )
-    role = models.CharField(
-        max_length=32,
-        choices=CHOICES_ROLE,
-        default='user'
+    company_name = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        verbose_name="Компания пользователя",
+        null=True,
+        blank=True
     )
 
     def __str__(self):
         """Возвращает строковое представление пользователя."""
         return self.username
-    
+
     def clean(self):
         """
         Метод для выполнения дополнительной валидации модели.
@@ -56,26 +44,3 @@ class CustomUser(AbstractUser):
         """
         self.full_clean()
         return super().save(*args, **kwargs)
-
-
-    # Методы, которые проверяют текущую роль пользователя
-    # возвращают True или False в зависимости от соответствия роли.
-    def is_user(self):
-        if self.role == 'user':
-            return True
-        return False
-
-    def is_moderator(self):
-        if self.role == 'moderator':
-            return True
-        return False
-
-    def is_admin(self):
-        if self.role == 'admin':
-            return True
-        return False
-    
-    def is_kaizen_admin(self):
-        if self.role == 'kaizen_admin':
-            return True
-        return False

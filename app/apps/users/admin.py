@@ -6,13 +6,19 @@ from .models import CustomUser
 class CustomUserAdmin(admin.ModelAdmin):
     """Модель отображения полей в админ панели."""
     list_display = [
+        'pk',
         'username',
-        'role',
+        'telegram_username',
+        'company_name',
     ]
 
     # Фильтрация по ролям
     list_filter = [
-        'role',
+        'company_name',
+    ]
+
+    list_editable = [
+        'company_name',
     ]
 
     # Поиск по username

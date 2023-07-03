@@ -5,12 +5,16 @@ from .models import (
     ConcernUrgency
 )
 
+from app.apps.companies.models import Company
+
+from guardian.admin import GuardedModelAdmin
+
 
 # произведем регистрацию 3 одинаковых моделей
 @admin.register(
     ConcernImportance, ConcernStatus, ConcernUrgency
 )
-class ModelAdmin(admin.ModelAdmin):
+class ModelAdmin(GuardedModelAdmin):
     list_display = [
         'pk',
         'description'
@@ -19,7 +23,7 @@ class ModelAdmin(admin.ModelAdmin):
 
 # регистрация названия обеспокоенностей
 @admin.register(ConcernName)
-class ConcernNameAdmin(admin.ModelAdmin):
+class ConcernNameAdmin(GuardedModelAdmin):
     """
     Модель отображения названий
     обеспокоенностей в админ панели.
@@ -30,10 +34,24 @@ class ConcernNameAdmin(admin.ModelAdmin):
         'description'
     ]
 
+    def get_queryset(self, request):
+        """
+        Метод, фильтрующий названия обеспокоенностей,
+        исходя из компании, в которой работает пользователь.
+        """
 
-# регистрация самих обеспокоенностей
+        # Получаем список записей
+        queryset = super().get_queryset(request)
+
+        if not request.user.is_superuser:
+            queryset = queryset.filter(company_name=request.user.company_name)
+        
+        return queryset
+
+
+# Регистрация самих обеспокоенностей
 @admin.register(Concerns)
-class ConcernsAdmin(admin.ModelAdmin):
+class ConcernsAdmin(GuardedModelAdmin):
     """
     Модель отображения
     обеспокоенностей в админ панели.
@@ -61,3 +79,38 @@ class ConcernsAdmin(admin.ModelAdmin):
             # Если поле added_by не заполнено, установите его в текущего пользователя
             obj.added_by = request.user
         super().save_model(request, obj, form, change)
+
+    def get_queryset(self, request):
+        """
+        Метод, фильтрующий обеспокоенности по компаниям
+        для пользователя.
+        """
+        queryset = super().get_queryset(request)
+
+        if not request.user.is_superuser:
+            # Получаем все компании, связанные с пользователем
+            user_companies = Company.objects.filter(customuser__id=request.user.id)
+            # Получаем все названия обеспокоенностей, связанные с компаниями пользователя
+            concern_names = ConcernName.objects.filter(company_name__in=user_companies)
+            # Фильтруем queryset продуктов по названиям продуктов
+            queryset = queryset.filter(concern_name__in=concern_names)
+        return queryset
+
+    def get_form(self, request, obj=None, **kwargs):
+        """
+        Метод, который предоставляет выбор для редактирования
+        Классификаторов только среди классификаторов определённой компании
+        пользователя.
+        """
+        form = super().get_form(request, obj, **kwargs)
+        # выполняется проверка на права пользователя
+        if not request.user.is_superuser and request.user.has_perm(
+            'handling_concerns.change_concerns'
+        ):
+            # Получаем все компании, связанные с пользователем
+            user_companies = Company.objects.filter(customuser__id=request.user.id)
+            # Ограничиваем выбор только классификаторами, связанными с компаниями пользователя
+            form.base_fields['concern_name'].queryset = ConcernName.objects.filter(
+                company_name__in=user_companies
+            )
+        return form

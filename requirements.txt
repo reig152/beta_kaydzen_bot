@@ -8,6 +8,7 @@ gunicorn~=20.1.0
 python-dotenv~=1.0.0
 starlette~=0.28.0
 uvicorn~=0.22.0
+django-guardian
 
 
 # req_dev.txt

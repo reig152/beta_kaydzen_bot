@@ -82,3 +82,8 @@ STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "static"
 
 AUTH_USER_MODEL = 'users.CustomUser'
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'guardian.backends.ObjectPermissionBackend',
+)

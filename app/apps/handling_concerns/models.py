@@ -46,6 +46,19 @@ class ConcernImportance(ConcernTypes):
 
 class ConcernStatus(ConcernTypes):
     """Модель статуса обеспокоенности."""
+    description = models.CharField(
+        max_length=256,
+        null=True,
+        blank=True,
+        default='В процессе исполнения',
+        verbose_name='Описание'
+    )
+    solution = models.TextField(
+        null=True,
+        blank=True,
+        verbose_name="Решение обеспокоенности"
+    )
+
     class Meta:
         """
         Класс для отображения модели на русском языке.

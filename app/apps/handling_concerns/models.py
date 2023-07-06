@@ -111,9 +111,25 @@ class Concerns(models.Model):
         verbose_name="Статус обеспокоенности"
     )
 
+    # Наименование
+    concern_title = models.CharField(
+        max_length=256,
+        verbose_name="Наименование обеспокоенности",
+        null=True,
+        blank=True
+    )
+
     # Описание обеспокоенности
     concern_description = models.TextField(
         verbose_name="Описание обеспокоенности"
+    )
+
+    # Экономический эффект
+    concern_effect = models.CharField(
+        max_length=256,
+        verbose_name="Экономический эффект",
+        null=True,
+        blank=True
     )
 
     # Предполагаемая причина (первоисточник)

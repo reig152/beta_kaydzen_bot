@@ -6,6 +6,11 @@ class Company(models.Model):
     company_name = models.TextField(
         verbose_name="Название компании"
     )
+    legal_company_name = models.TextField(
+        verbose_name="Юридичиское имя компании",
+        null=True,
+        blank=True
+    )
     added = models.DateTimeField(
         auto_now_add=True,
         verbose_name='Дата добавления в базу данных'

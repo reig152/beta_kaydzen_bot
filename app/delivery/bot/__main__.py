@@ -2,20 +2,24 @@ import logging
 
 from aiogram import Bot, Dispatcher
 from aiogram.types import BotCommand
+from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.fsm.storage.redis import RedisStorage, Redis
 
 from app.apps.core.bot.handlers import router as core_router
-from app.config.bot import RUNNING_MODE, TG_TOKEN, RunningMode
+from app.apps.core.bot.concern_send import router as send_router
+from app.config.bot import RUNNING_MODE, TG_TOKEN, RunningMode, REDIS_HOST, REDIS_PASS
 
 bot = Bot(TG_TOKEN, parse_mode="HTML")
+storage: MemoryStorage = MemoryStorage()
 
-dispatcher = Dispatcher()
+dispatcher = Dispatcher(storage=storage)
 logging.basicConfig(level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
 
 def _register_routers() -> None:
-    dispatcher.include_router(core_router)
+    dispatcher.include_routers(core_router, send_router)
 
 
 async def _set_bot_commands() -> None:

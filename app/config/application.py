@@ -16,7 +16,9 @@ INSTALLED_APPS: list[str] = [
     "app.apps.handling_concerns",
     "app.apps.users",
     "app.apps.companies",
-    "guardian"
+    "guardian",
+    "rest_framework",
+    "app.apps.api",
 ]
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.

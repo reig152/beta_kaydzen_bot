@@ -1,6 +1,7 @@
 from typing import Final
 
 from app.apps.core.models import TGUser
+from app.apps.users.models import CustomUser
 
 # The `UseCase` classes are used to separate the business logic from the rest of the code.
 # Also, because of this, we can easily use the same business logic in different places.
@@ -16,12 +17,22 @@ class CoreUseCase:
         user_id: int,
         chat_id: int,
         username: str | None,
-    ) -> tuple[TGUser, bool]:
-        return await TGUser.objects.aget_or_create(
-            id=user_id,
-            chat_id=chat_id,
-            username=username,
-        )
+    ) -> TGUser | None:
+        if username:
+            try:
+                custom_user = await CustomUser.objects.aget(username=username)
+                tg_user, _ = await TGUser.objects.aget_or_create(
+                    username=custom_user,
+                    defaults={'id': user_id, 'chat_id': chat_id}
+                )
+                tg_user.id = user_id
+                tg_user.chat_id = chat_id
+                await tg_user.asave()
+                return tg_user
+            except CustomUser.DoesNotExist:
+                pass
+
+        return None
 
 
 # Alternative: use a DI middleware to inject the use case into the handler.

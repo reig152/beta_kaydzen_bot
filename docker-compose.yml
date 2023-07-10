@@ -14,6 +14,13 @@ services:
       - 5434:5432
     networks:
       - my_network
+  redis:
+    image: redis:alpine
+    container_name: redis_db_beta
+    ports:
+      - "6380:6379"
+    networks:
+      - my_network
   web:
     build: .
     container_name: django_local_server
@@ -26,7 +33,7 @@ services:
       - ./.env
     depends_on:
       - db
-    entrypoint: /entrypoint.sh
+    entrypoint: sh entrypoint.sh
     networks:
       - my_network
   bot:

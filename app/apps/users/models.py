@@ -1,12 +1,52 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Permission
 from django.core.exceptions import ValidationError
 
 from app.apps.companies.models import Company
 
 
+class CustomPermission(Permission):
+
+    class Meta:
+        verbose_name = "Право"
+        verbose_name_plural = "Права"
+        proxy = True
+
+    def __str__(self):
+        return self.get_human_readable_permission()
+
+    def get_human_readable_permission(self):
+        # Словарь для замены стандартных паттернов на человекочитаемые имена
+        pattern_mapping = {
+            'Can add': 'Может добавлять',
+            'Can change': 'Может изменять',
+            'Can delete': 'Может удалять',
+            'Can view': 'Может просматривать',
+            # Добавьте другие паттерны и их замены, если требуется
+        }
+        
+        # Заменяем стандартные паттерны на человекочитаемые имена, используя словарь
+        name = self.name
+        for pattern, human_readable_name in pattern_mapping.items():
+            name = name.replace(pattern, human_readable_name)
+
+        return name
+
+
+class Role(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    permissions = models.ManyToManyField(CustomPermission, blank=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Роль"
+        verbose_name_plural = "Роли"
+
+
 class CustomUser(AbstractUser):
-    """Модель пользователя с учетом добавления ролей"""
+    """Модель пользователя c учетом добавления ролей"""
     first_name = models.CharField(
         verbose_name="Имя",
         max_length=150,
@@ -50,26 +90,43 @@ class CustomUser(AbstractUser):
         max_length=150,
         blank=True
     )
+    role = models.ForeignKey(
+        Role,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='users'
+    )
+    custom_user_permissions = models.ManyToManyField(
+        CustomPermission,
+        blank=True,
+        related_name='custom_users'
+    )
 
     def __str__(self):
         """Возвращает строковое представление пользователя."""
         return self.username
 
-    def clean(self):
-        """
-        Метод для выполнения дополнительной валидации модели.
-        Если имя пользователя (username) равно "me",
-        будет вызвано исключение ValidationError.
-        """
-        if self.username == 'me':
-            raise ValidationError('Запрещено использовать me '
-                                  'в качестве username!')
+    @property
+    def user_permissions(self):
+        return self.custom_user_permissions
 
     def save(self, *args, **kwargs):
-        """
-        Переопределенный метод save(), который вызывает метод full_clean()
-        для валидации модели перед сохранением в базу данных,
-        а затем вызывает оригинальный метод save() базовой модели.
-        """
-        self.full_clean()
-        return super().save(*args, **kwargs)
+        # Сохраняем пользователя
+        super().save(*args, **kwargs)
+
+        # После сохранения пользователя, очищаем ManyToMany связь
+        self.custom_user_permissions.clear()
+        
+        # Перед сохранением пользователя, убедимся, что связи с ролью и правами установлены
+        if self.role:
+            # Если есть роль, получаем связанные права и устанавливаем их пользователю
+            permissions = self.role.permissions.all()
+            self.custom_user_permissions.set(permissions)
+
+        # Сохраняем пользователя с установленными связями
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"

@@ -1,4 +1,4 @@
-aiogram~=3.0.0b7
+aiogram==3.0.0b7
 psycopg2-binary
 dj_database_url~=2.0.0
 Django~=4.2

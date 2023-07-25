@@ -53,7 +53,6 @@ async def handle_start_command(message: Message, state: FSMContext) -> None:
 
 # добавить хендлер с кнопкой главного меню
 
-
 @router.callback_query(
         SendConcern.at_main_menu,
         Text(st.concern_create)

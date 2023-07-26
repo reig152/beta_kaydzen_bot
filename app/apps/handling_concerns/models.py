@@ -1,8 +1,11 @@
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.contrib import messages
 
 from .concern_types import ConcernTypes
 from app.apps.companies.models import Company
-from app.apps.users.models import CustomUser
+from app.apps.users.models import CustomUser, Role
 
 
 class ConcernName(ConcernTypes):
@@ -46,19 +49,6 @@ class ConcernImportance(ConcernTypes):
 
 class ConcernStatus(ConcernTypes):
     """Модель статуса обеспокоенности."""
-    description = models.CharField(
-        max_length=256,
-        null=True,
-        blank=True,
-        default='В процессе исполнения',
-        verbose_name='Описание'
-    )
-    solution = models.TextField(
-        null=True,
-        blank=True,
-        verbose_name="Решение обеспокоенности"
-    )
-
     class Meta:
         """
         Класс для отображения модели на русском языке.
@@ -163,3 +153,70 @@ class Concerns(models.Model):
         обеспокоенности в админке.
         """
         return self.concern_description[:20]
+
+
+class ConcernHandle(models.Model):
+    """Модель решения обеспокоенностей."""
+    responsible_user = models.OneToOneField(
+        CustomUser,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        verbose_name='Ответственный пользователь',
+    )
+    concern = models.OneToOneField(
+        Concerns,
+        on_delete=models.CASCADE,
+        verbose_name='Обеспокоенность'
+    )
+    solution = models.TextField(
+        null=True,
+        blank=True,
+        verbose_name='Описание решения'
+    )
+
+    class Meta:
+        verbose_name = 'Решение'
+        verbose_name_plural = 'Решения'
+
+    def __str__(self):
+        return f"Решение для {self.concern}"
+
+
+@receiver(post_save, sender=Concerns)
+def create_concern_handle(sender, instance, created, **kwargs):
+    """
+    Функция-обработчик сигнала post_save для модели Concerns.
+    Создает запись в модели ConcernHandle при создании обеспокоенности.
+    """
+    if created:
+        # Если обеспокоенность была только что создана, создаем запись в модели ConcernHandle
+        ConcernHandle.objects.create(concern=instance)
+
+        # Отправляем уведомление для пользователей с ролью "Сортировщик"
+        send_concern_created_notification(instance)
+
+
+@receiver(post_save, sender=Concerns)
+def send_concern_created_notification(concern_instance, **kwargs):
+    """
+    Функция для отправки уведомления
+    o создании обеспокоенности для пользователей
+    c ролью "Сортировщик".
+    """
+    # Получаем роли всех пользователей, связанных с обеспокоенностью
+    roles = Role.objects.filter(users__concern=concern_instance)
+
+    # Фильтруем роли, чтобы получить только пользователей с ролью "Сортировщик"
+    sorters = roles.filter(name='Сортировщик')
+
+    # Получаем список пользователей с ролью "Сортировщик"
+    sorter_users = sorters.values_list('users__username', flat=True)
+
+    # Отправляем уведомление для каждого пользователя с ролью "Сортировщик"
+    for username in sorter_users:
+        messages.add_message(
+            request=None,  # Этот аргумент не требуется, так как мы отправляем уведомление в админ-панели
+            level=messages.INFO,  # Уровень уведомления INFO (зеленый)
+            message=f"Новая обеспокоенность создана: {concern_instance}",  # Сообщение с информацией о созданной обеспокоенности
+        )

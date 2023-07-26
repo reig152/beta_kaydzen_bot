@@ -2,10 +2,11 @@ from django.contrib import admin
 from .models import (
     Concerns, ConcernName,
     ConcernImportance, ConcernStatus,
-    ConcernUrgency
+    ConcernUrgency, ConcernHandle
 )
 
 from app.apps.companies.models import Company
+from app.apps.users.models import CustomUser
 
 from guardian.admin import GuardedModelAdmin
 
@@ -47,6 +48,42 @@ class ConcernNameAdmin(GuardedModelAdmin):
             queryset = queryset.filter(company_name=request.user.company_name)
         
         return queryset
+
+
+# Регистрация модели решения обеспокоенностей
+@admin.register(ConcernHandle)
+class ConcernsHandleAdmin(GuardedModelAdmin):
+    list_display = [
+        'pk',
+        'responsible_user',
+        'concern',
+        'solution',
+    ]
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+
+        if not request.user.is_superuser:
+            user_companies = Company.objects.filter(
+                customuser__id=request.user.id
+            )
+            # Фильтруем queryset по полю company_name из модели CustomUser
+            queryset = queryset.filter(
+                concern__added_by__company_name__in=user_companies
+            )
+
+        return queryset
+    
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+
+        if not request.user.is_superuser:
+            user_companies = Company.objects.filter(customuser__id=request.user.id)
+            form.base_fields['responsible_user'].queryset = CustomUser.objects.filter(
+                company_name__in=user_companies, role__name="Решатель"
+            )
+
+        return form
 
 
 # Регистрация самих обеспокоенностей
@@ -92,7 +129,7 @@ class ConcernsAdmin(GuardedModelAdmin):
             user_companies = Company.objects.filter(customuser__id=request.user.id)
             # Получаем все названия обеспокоенностей, связанные с компаниями пользователя
             concern_names = ConcernName.objects.filter(company_name__in=user_companies)
-            # Фильтруем queryset продуктов по названиям продуктов
+            # Фильтруем queryset
             queryset = queryset.filter(concern_name__in=concern_names)
         return queryset
 

@@ -16,9 +16,12 @@ def create_default_roles(sender, **kwargs):
                 'permissions': [
                     # перечисляем права для решателя
                     # по аналогии сделаем с другими дефолтными ролями
-                    'add_concerns',
+                    'add_concerns', 
                     'change_concerns',
                     'view_concerns',
+                    'change_concernhandle',
+                    'delete_concernhandle',
+                    'view_concernhandle',
                 ]
             },
             {
@@ -54,6 +57,10 @@ def create_default_roles(sender, **kwargs):
                     'change_customuser',
                     'delete_customuser',
                     'view_customuser',
+                    'change_concernhandle',
+                    'add_concernhandle',
+                    'delete_concernhandle',
+                    'view_concernhandle',
                 ]
             },
             {
@@ -61,6 +68,15 @@ def create_default_roles(sender, **kwargs):
                 'permissions': [
                     # Здесь перечислите коды прав для роли 2
                     'add_concerns',
+                ]
+            },
+            {
+                'name': 'Сортировщик',
+                'permissions': [
+                    # Здесь перечислите коды прав для роли 2
+                    'change_concernhandle',
+                    'delete_concernhandle',
+                    'view_concernhandle',
                 ]
             },
         ]

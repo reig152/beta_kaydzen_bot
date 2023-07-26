@@ -95,7 +95,8 @@ class CustomUser(AbstractUser):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='users'
+        related_name='users',
+        verbose_name='Роль'
     )
     custom_user_permissions = models.ManyToManyField(
         CustomPermission,

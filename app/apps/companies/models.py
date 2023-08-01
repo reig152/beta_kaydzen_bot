@@ -23,3 +23,27 @@ class Company(models.Model):
 
     def __str__(self) -> str:
         return self.company_name
+
+
+class Department(models.Model):
+    """
+    Модель департаментов.
+    """
+    company_name = models.ForeignKey(
+        Company,
+        on_delete=models.CASCADE,
+        verbose_name="Компания департамента",
+        null=True,
+        blank=True
+    )
+    department_name = models.CharField(
+        max_length=256,
+        verbose_name="Название департамента"
+    )
+
+    class Meta:
+        verbose_name = 'Департамент'
+        verbose_name_plural = 'Департаменты'
+
+    def __str__(self) -> str:
+        return self.department_name

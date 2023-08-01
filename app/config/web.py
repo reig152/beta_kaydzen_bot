@@ -87,3 +87,9 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
     'guardian.backends.ObjectPermissionBackend',
 )
+
+NOTIFICATIONS_BACKENDS = [
+    'notifications.backends.database.DatabaseBackend',
+]
+
+NOTIFICATIONS_USER_MODEL = 'users.CustomUser'

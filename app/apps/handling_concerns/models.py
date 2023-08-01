@@ -1,7 +1,7 @@
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.contrib import messages
+from notifications.signals import notify
 
 from .concern_types import ConcernTypes
 from app.apps.companies.models import Company
@@ -197,26 +197,25 @@ def create_concern_handle(sender, instance, created, **kwargs):
         send_concern_created_notification(instance)
 
 
-@receiver(post_save, sender=Concerns)
-def send_concern_created_notification(concern_instance, **kwargs):
+def send_concern_created_notification(instance, **kwargs):
     """
     Функция для отправки уведомления
     o создании обеспокоенности для пользователей
     c ролью "Сортировщик".
     """
-    # Получаем роли всех пользователей, связанных с обеспокоенностью
-    roles = Role.objects.filter(users__concern=concern_instance)
+    # Получаем департамент автора обеспокоенности
+    author_department = instance.added_by.department_name
 
-    # Фильтруем роли, чтобы получить только пользователей с ролью "Сортировщик"
-    sorters = roles.filter(name='Сортировщик')
-
-    # Получаем список пользователей с ролью "Сортировщик"
-    sorter_users = sorters.values_list('users__username', flat=True)
+    # Получаем всех сортировщиков
+    sorters = CustomUser.objects.filter(
+        role__name='Сортировщик',
+        department_name=author_department
+    )
 
     # Отправляем уведомление для каждого пользователя с ролью "Сортировщик"
-    for username in sorter_users:
-        messages.add_message(
-            request=None,  # Этот аргумент не требуется, так как мы отправляем уведомление в админ-панели
-            level=messages.INFO,  # Уровень уведомления INFO (зеленый)
-            message=f"Новая обеспокоенность создана: {concern_instance}",  # Сообщение с информацией о созданной обеспокоенности
+    for user in sorters:
+        notify.send(
+            instance.added_by,
+            recipient=user,
+            verb=f"Новая обеспокоенность создана: {instance}",
         )

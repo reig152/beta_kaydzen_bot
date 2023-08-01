@@ -44,6 +44,7 @@ class CustomUserAdmin(admin.ModelAdmin):
         'telegram_username',
         'role',
         'company_name',
+        'department_name',
     ]
 
     # Фильтрация по ролям
@@ -68,6 +69,7 @@ class CustomUserAdmin(admin.ModelAdmin):
             'mobile',
             'telegram_username',
             'company_name',
+            'department_name',
             'position'
         )}),
         ('Права доступа', {'fields': (
@@ -119,3 +121,6 @@ class CustomUserAdmin(admin.ModelAdmin):
 
 
 admin.site.unregister(auth.models.Group)
+admin.site.index_title = "Kaizen Administration"
+admin.site.site_header = "Kaizen Administration"
+admin.site.site_title = "Kaizen Administration"

@@ -74,9 +74,8 @@ def create_default_roles(sender, **kwargs):
                 'name': 'Сортировщик',
                 'permissions': [
                     # Здесь перечислите коды прав для роли 2
-                    'change_concernhandle',
-                    'delete_concernhandle',
-                    'view_concernhandle',
+                    'change_concerns',
+                    'view_concerns',
                 ]
             },
         ]

@@ -5,7 +5,7 @@ from .models import (
     ConcernUrgency, ConcernHandle
 )
 
-from app.apps.companies.models import Company
+from app.apps.companies.models import Company, Department
 from app.apps.users.models import CustomUser
 
 from guardian.admin import GuardedModelAdmin
@@ -79,9 +79,18 @@ class ConcernsHandleAdmin(GuardedModelAdmin):
 
         if not request.user.is_superuser:
             user_companies = Company.objects.filter(customuser__id=request.user.id)
+            user_departments = Department.objects.filter(customuser__id=request.user.id)
             form.base_fields['responsible_user'].queryset = CustomUser.objects.filter(
-                company_name__in=user_companies, role__name="Решатель"
+                company_name__in=user_companies,
+                role__name="Решатель",
+                department_name__in=user_departments
             )
+            if request.user.is_sorter():
+                allowed_fields = ['responsible_user']
+
+                for field_name, field in form.base_fields.items():
+                    if field_name not in allowed_fields:
+                        field.disabled = True
 
         return form
 
@@ -150,4 +159,5 @@ class ConcernsAdmin(GuardedModelAdmin):
             form.base_fields['concern_name'].queryset = ConcernName.objects.filter(
                 company_name__in=user_companies
             )
+
         return form

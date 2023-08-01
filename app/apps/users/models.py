@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, Permission
 from django.core.exceptions import ValidationError
 
-from app.apps.companies.models import Company
+from app.apps.companies.models import Company, Department
 
 
 class CustomPermission(Permission):
@@ -85,6 +85,13 @@ class CustomUser(AbstractUser):
         null=True,
         blank=True
     )
+    department_name = models.ForeignKey(
+        Department,
+        on_delete=models.CASCADE,
+        verbose_name="Департамент пользователя",
+        null=True,
+        blank=True
+    )
     position = models.CharField(
         verbose_name="Должность пользователя",
         max_length=150,
@@ -111,6 +118,10 @@ class CustomUser(AbstractUser):
     @property
     def user_permissions(self):
         return self.custom_user_permissions
+    
+    def is_sorter(self):
+        if self.role.name == 'Сортировщик':
+            return True
 
     def save(self, *args, **kwargs):
         # Сохраняем пользователя

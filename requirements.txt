@@ -11,6 +11,7 @@ uvicorn~=0.22.0
 django-guardian
 redis
 djangorestframework
+django-notifications-hq
 
 
 # req_dev.txt

@@ -93,3 +93,5 @@ NOTIFICATIONS_BACKENDS = [
 ]
 
 NOTIFICATIONS_USER_MODEL = 'users.CustomUser'
+
+NOTIFICATIONS_NOTIFICATION_MODEL = 'handling_concerns.CustomNotification'

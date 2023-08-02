@@ -1,9 +1,14 @@
 from django.contrib import admin
+from django.urls import reverse, NoReverseMatch
+from django.utils.html import format_html
 from .models import (
     Concerns, ConcernName,
     ConcernImportance, ConcernStatus,
-    ConcernUrgency, ConcernHandle
+    ConcernUrgency, ConcernHandle,
+    CustomNotification
 )
+
+from notifications.admin import NotificationAdmin
 
 from app.apps.companies.models import Company, Department
 from app.apps.users.models import CustomUser
@@ -67,9 +72,13 @@ class ConcernsHandleAdmin(GuardedModelAdmin):
             user_companies = Company.objects.filter(
                 customuser__id=request.user.id
             )
+            user_departments = Department.objects.filter(
+                customuser__id=request.user.id
+            )
             # Фильтруем queryset по полю company_name из модели CustomUser
             queryset = queryset.filter(
-                concern__added_by__company_name__in=user_companies
+                concern__added_by__company_name__in=user_companies,
+                concern__added_by__department_name__in=user_departments
             )
 
         return queryset
@@ -150,9 +159,7 @@ class ConcernsAdmin(GuardedModelAdmin):
         """
         form = super().get_form(request, obj, **kwargs)
         # выполняется проверка на права пользователя
-        if not request.user.is_superuser and request.user.has_perm(
-            'handling_concerns.change_concerns'
-        ):
+        if not request.user.is_superuser:
             # Получаем все компании, связанные с пользователем
             user_companies = Company.objects.filter(customuser__id=request.user.id)
             # Ограничиваем выбор только классификаторами, связанными с компаниями пользователя
@@ -161,3 +168,52 @@ class ConcernsAdmin(GuardedModelAdmin):
             )
 
         return form
+
+# Получаем словарь зарегистрированных моделей и соответствующих им классов admin.ModelAdmin
+registered_models = admin.site._registry
+
+# Выводим список зарегистрированных моделей
+for model, admin_class in registered_models.items():
+    print(model.__name__)
+
+admin.site.unregister(CustomNotification)
+
+
+@admin.register(CustomNotification)
+class CustomNotificationAdmin(GuardedModelAdmin):
+    raw_id_fields = ('recipient',)
+    list_display = ('custom_recipient', 'custom_actor',
+                    'custom_target_object_url', 'custom_unread',)
+
+    @admin.display(description="Получатель")
+    def custom_recipient(self, obj):
+        return obj.recipient
+    
+    @admin.display(description="Отправитель")
+    def custom_actor(self, obj):
+        return obj.actor
+    
+    @admin.display(description="Назначить исполнителя")
+    def custom_target_object_url(self, obj):
+        try:
+            url = reverse("admin:{0}_{1}_change".format(obj.target_content_type.app_label, obj.target_content_type.model), args=(obj.target_object_id,))
+            return format_html("<a href='{url}'>{id}</a>", url=url, id=obj.target_object_id)
+        except NoReverseMatch:
+            return obj.target_object_id
+    
+    @admin.display(description="Непрочитано")
+    def custom_unread(self, obj):
+        if obj.unread:
+            return format_html('<span style="color:green;">&#x2713;</span>')
+        else:
+            return format_html('<span style="color:red;">&#x2717;</span>')
+
+    fieldsets = (
+        ('Общая инофрмация', {'fields': (
+            'actor_object_id',
+            'recipient',
+            'target_object_id',
+            'verb',
+            'unread',
+        )}),
+    )

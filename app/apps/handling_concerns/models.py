@@ -1,4 +1,5 @@
 from django.db import models
+from notifications.base.models import AbstractNotification
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from notifications.signals import notify
@@ -183,6 +184,13 @@ class ConcernHandle(models.Model):
         return f"Решение для {self.concern}"
 
 
+class CustomNotification(AbstractNotification):
+
+    class Meta:
+        verbose_name = "Уведомление"
+        verbose_name_plural = "Уведомления"
+
+
 @receiver(post_save, sender=Concerns)
 def create_concern_handle(sender, instance, created, **kwargs):
     """
@@ -212,10 +220,17 @@ def send_concern_created_notification(instance, **kwargs):
         department_name=author_department
     )
 
+    # получаем объект решения
+    new_solution = ConcernHandle.objects.get(
+        concern__id=instance.id
+    )
+
     # Отправляем уведомление для каждого пользователя с ролью "Сортировщик"
     for user in sorters:
         notify.send(
             instance.added_by,
             recipient=user,
-            verb=f"Новая обеспокоенность создана: {instance}",
+            verb=f"Создана {instance.concern_importance} обеспокоенность",
+            target=new_solution,
+            public=False
         )

@@ -1,3 +1,5 @@
+from asyncio import to_thread
+
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message, CallbackQuery
@@ -10,6 +12,9 @@ import app.apps.core.bot.keyboards as kb
 
 from app.apps.core.use_case import CORE_USE_CASE
 from app.config.application import INSTALLED_APPS
+
+from .get_attributes import get_status
+
 
 router = Router()
 
@@ -51,8 +56,29 @@ async def handle_start_command(message: Message, state: FSMContext) -> None:
         await state.set_state(SendConcern.at_main_menu)
 
 
-# добавить хендлер с кнопкой главного меню
+@router.message(Command(commands=["statuses"]))
+async def get_concern_status(message: Message, state: FSMContext):
+    await state.clear()
 
+    # необходимо получить статус и отправить его пользователю
+    username = message.from_user.username
+
+    msg_list = await to_thread(get_status, username)
+
+    for msg in msg_list:
+        if msg_list:
+            await message.answer(
+                msg,
+                parse_mode="HTML"
+            )
+        else:
+            await message.answer(
+                "У вас нет зарегистированных обеспокоенностей",
+                parse_mode="HTML"
+            )
+
+
+# добавить хендлер с кнопкой главного меню
 @router.callback_query(
         SendConcern.at_main_menu,
         Text(st.concern_create)

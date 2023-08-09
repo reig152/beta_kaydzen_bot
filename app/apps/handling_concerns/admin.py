@@ -169,12 +169,6 @@ class ConcernsAdmin(GuardedModelAdmin):
 
         return form
 
-# Получаем словарь зарегистрированных моделей и соответствующих им классов admin.ModelAdmin
-registered_models = admin.site._registry
-
-# Выводим список зарегистрированных моделей
-for model, admin_class in registered_models.items():
-    print(model.__name__)
 
 admin.site.unregister(CustomNotification)
 

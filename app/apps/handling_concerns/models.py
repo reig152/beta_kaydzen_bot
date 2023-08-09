@@ -5,6 +5,7 @@ from django.dispatch import receiver
 from notifications.signals import notify
 
 from .concern_types import ConcernTypes
+from .send_notification import send_telegram
 from app.apps.companies.models import Company
 from app.apps.users.models import CustomUser, Role
 
@@ -203,6 +204,9 @@ def create_concern_handle(sender, instance, created, **kwargs):
 
         # Отправляем уведомление для пользователей с ролью "Сортировщик"
         send_concern_created_notification(instance)
+
+        # Отправляем уведомление в телеграм
+        send_telegram(instance)
 
 
 def send_concern_created_notification(instance, **kwargs):

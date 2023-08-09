@@ -12,6 +12,8 @@ django-guardian
 redis
 djangorestframework
 django-notifications-hq
+pandas
+openpyxl
 
 
 # req_dev.txt

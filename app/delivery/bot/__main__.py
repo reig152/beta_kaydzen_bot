@@ -26,7 +26,7 @@ async def _set_bot_commands() -> None:
     await bot.set_my_commands(
         [
             BotCommand(command="/start", description="Start bot"),
-            BotCommand(command="/apps", description="Show installed apps"),
+            BotCommand(command="/statuses", description="Показать статусы обеспокоенностей"),
         ]
     )
 

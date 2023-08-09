@@ -26,6 +26,7 @@ urlpatterns: list[URLResolver | URLPattern] = [
     path("admin/", admin.site.urls),
     path("api/", include("app.apps.api.urls")),
     path('^inbox/notifications/', include(notifications.urls, namespace='notifications')),
+    path('', include('app.apps.users.urls')),
 ]
 
 if DEBUG:

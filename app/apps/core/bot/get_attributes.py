@@ -1,11 +1,14 @@
 from app.apps.handling_concerns.models import ConcernUrgency, Concerns
+from django.apps import apps
 
 
-def get_all_attributes(attr):
+
+def get_all_attributes(model_name, attr):
     """Функция собирает наименования кнопок для клавиатуры."""
+    ModelClass = apps.get_model('handling_concerns', model_name)
     all_attr = []
     attrib = list(
-        ConcernUrgency.objects.values_list(attr, flat=True).distinct()
+        ModelClass.objects.values_list(attr, flat=True).distinct()
     )
     for x in attrib:
         if x not in all_attr:

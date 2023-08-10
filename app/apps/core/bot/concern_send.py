@@ -23,7 +23,8 @@ router = Router()
 async def typing_classificator(message: Message, state: FSMContext):
     """Вызов функции /start."""
     urgency_type = 'description'
-    reply_markup = await to_thread(make_filters_kb, urgency_type)
+    urgency_model = 'ConcernUrgency'
+    reply_markup = await to_thread(make_filters_kb, urgency_model, urgency_type)
 
     await message.answer(
         st.concern_urgency_text,
@@ -39,9 +40,13 @@ async def typing_classificator(message: Message, state: FSMContext):
         SendConcern.at_urgency,
 )
 async def typing_urgency(callback: CallbackQuery, state: FSMContext):
+    urgency_type = 'description'
+    urgency_model = 'ConcernImportance'
+    reply_markup = await to_thread(make_filters_kb, urgency_model, urgency_type)
 
     await callback.message.edit_text(
-        st.concern_importance_text
+        st.concern_importance_text,
+        reply_markup=reply_markup
     )
 
     await state.update_data(concern_urgency=callback.data)
@@ -49,16 +54,16 @@ async def typing_urgency(callback: CallbackQuery, state: FSMContext):
     await state.set_state(SendConcern.at_importance)
 
 
-@router.message(
+@router.callback_query(
         SendConcern.at_importance,
 )
-async def typing_importance(message: Message, state: FSMContext):
+async def typing_importance(callback: CallbackQuery, state: FSMContext):
 
-    await message.answer(
+    await callback.message.edit_text(
         st.concern_naming_text
     )
 
-    await state.update_data(concern_importance=message.text)
+    await state.update_data(concern_importance=callback.data)
 
     await state.set_state(SendConcern.at_naming)
 

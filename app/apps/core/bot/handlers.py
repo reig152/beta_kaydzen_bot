@@ -22,6 +22,7 @@ router = Router()
 class SendConcern(StatesGroup):
     """Машина состояний отправки обеспокоенностей."""
     at_main_menu = State()
+    choosing_menu_points = State()
     at_classificator = State()
     at_urgency = State()
     at_importance = State()
@@ -86,12 +87,12 @@ async def get_concern_status(message: Message, state: FSMContext):
 async def cmd_start(callback: CallbackQuery, state: FSMContext):
     """Вызов функции /start."""
     await callback.message.edit_text(
-        st.name_concern
+        st.menu_points,
+        reply_markup=kb.main_menu_kb()
     )
 
-    await state.set_state(SendConcern.at_classificator)
-
-
+    await state.set_state(SendConcern.choosing_menu_points)
+ 
 
 @router.message(Command(commands=["apps"]))
 async def handle_apps_command(message: Message) -> None:

@@ -17,7 +17,7 @@ router = Router()
 
 @router.callback_query(
         SendConcern.choosing_menu_points,
-        Text(text=st.type_naming)
+        Text(text=st.type_reason)
 )
 async def choose_menu_points(
         callback: CallbackQuery,
@@ -25,14 +25,14 @@ async def choose_menu_points(
     """Выбор пунктов меню."""
 
     await callback.message.edit_text(
-        text=st.concern_naming_text,
+        text=st.concern_reason_text,
     )
 
-    await state.set_state(SendConcern.at_naming)
+    await state.set_state(SendConcern.at_reason)
 
 
 @router.callback_query(
-        SendConcern.at_naming,
+        SendConcern.at_reason,
         Text(text=st.finish_approve)
 )
 async def edit_choice(
@@ -47,7 +47,7 @@ async def edit_choice(
 
 
 @router.callback_query(
-        SendConcern.at_naming,
+        SendConcern.at_reason,
         Text(text=st.edit_choice_text)
 )
 async def choose_menu_points(
@@ -56,25 +56,25 @@ async def choose_menu_points(
     """Выбор пунктов меню."""
 
     await callback.message.edit_text(
-        text=st.concern_naming_text,
+        text=st.concern_reason_text,
     )
 
-    await state.set_state(SendConcern.at_naming)
+    await state.set_state(SendConcern.at_reason)
 
 
 @router.message(
-    SendConcern.at_naming,
+    SendConcern.at_reason,
 )
 async def classificator_chosen(
         message: Message,
         state: FSMContext):
     """Обрабротка выбранной срочности."""
 
-    await state.update_data(concern_naming=message.text)
+    await state.update_data(concern_reason=message.text)
 
-    chosen_naming = await state.get_data()
+    chosen_reason = await state.get_data()
 
     await message.answer(
-        text=f"{st.choice_text} {chosen_naming.get('concern_naming', '')}",
+        text=f"{st.choice_text} {chosen_reason.get('concern_reason', '')}",
         reply_markup=kb.check_data_kb()
     )

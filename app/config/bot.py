@@ -15,7 +15,6 @@ RUNNING_MODE = env("RUNNING_MODE", cast=RunningMode, default=RunningMode.LONG_PO
 WEBHOOK_URL = env("WEBHOOK_URL", cast=str, default="")
 
 # Redis
-# Redis
 REDIS_URL = env("REDIS_URL", cast=str, default="redis://localhost:6379")
 
 # REDIS AUTH

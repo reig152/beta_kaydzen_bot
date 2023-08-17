@@ -23,19 +23,19 @@ async def choose_menu_points(
         callback: CallbackQuery,
         state: FSMContext):
     """Выбор пунктов меню."""
-    urgency_type = 'description'
-    urgency_model = 'ConcernImportance'
-    reply_markup = await to_thread(make_filters_kb, urgency_model, urgency_type)
+    importance_type = 'description'
+    importance_model = 'ConcernImportance'
+    reply_markup = await to_thread(make_filters_kb, importance_model, importance_type)
     await callback.message.edit_text(
-        text=st.concern_urgency_text,
+        text=st.concern_importance_text,
         reply_markup=reply_markup
     )
 
-    await state.set_state(SendConcern.at_urgency)
+    await state.set_state(SendConcern.at_importance)
 
 
 @router.callback_query(
-        SendConcern.at_urgency,
+        SendConcern.at_importance,
         Text(text=st.finish_approve)
 )
 async def edit_choice(
@@ -50,38 +50,37 @@ async def edit_choice(
 
 
 @router.callback_query(
-        SendConcern.at_urgency,
+        SendConcern.at_importance,
         Text(text=st.edit_choice_text)
 )
 async def choose_menu_points(
         callback: CallbackQuery,
         state: FSMContext):
     """Выбор пунктов меню."""
-    urgency_type = 'description'
-    urgency_model = 'ConcernImportance'
-    reply_markup = await to_thread(make_filters_kb, urgency_model, urgency_type)
+    importance_type = 'description'
+    importance_model = 'ConcernImportance'
+    reply_markup = await to_thread(make_filters_kb, importance_model, importance_type)
     await callback.message.edit_text(
-        text=st.concern_urgency_text,
+        text=st.concern_importance_text,
         reply_markup=reply_markup
     )
 
-    await state.set_state(SendConcern.at_urgency)
+    await state.set_state(SendConcern.at_importance)
 
 
 @router.callback_query(
-    SendConcern.at_urgency,
+    SendConcern.at_importance,
 )
-async def urgency_chosen(
+async def importance_chosen(
         callback: CallbackQuery,
         state: FSMContext):
     """Обрабротка выбранной срочности."""
 
-    await state.update_data(concern_urgency=callback.data)
+    await state.update_data(concern_importance=callback.data)
 
-    chosen_urgency = await state.get_data()
+    chosen_importance = await state.get_data()
 
     await callback.message.edit_text(
-        text=f"{st.choice_text} {chosen_urgency.get('concern_urgency', '')}",
+        text=f"{st.choice_text} {chosen_importance.get('concern_importance', '')}",
         reply_markup=kb.check_data_kb()
     )
-

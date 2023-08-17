@@ -7,9 +7,18 @@ from aiogram.fsm.storage.redis import RedisStorage, Redis
 
 from app.apps.core.bot.handlers import router as core_router
 from app.apps.core.bot.send_importance import router as send_importance
+from app.apps.core.bot.send_urgency import router as send_urgency
+from app.apps.core.bot.send_classificator import router as send_classificator
+from app.apps.core.bot.send_description import router as send_description
+from app.apps.core.bot.send_effect import router as send_effect
+from app.apps.core.bot.send_naming import router as send_naming
+from app.apps.core.bot.send_solution import router as send_solution
+from app.apps.core.bot.send_reason import router as send_reason
+from app.apps.core.bot.concern_send import router as concern_send
 from app.config.bot import RUNNING_MODE, TG_TOKEN, RunningMode, REDIS_HOST, REDIS_PASS
 
 bot = Bot(TG_TOKEN, parse_mode="HTML")
+# redis: Redis = Redis(host=REDIS_HOST, password=REDIS_PASS)
 storage: MemoryStorage = MemoryStorage()
 
 dispatcher = Dispatcher(storage=storage)
@@ -21,7 +30,15 @@ logger = logging.getLogger(__name__)
 def _register_routers() -> None:
     dispatcher.include_routers(
         core_router,
-        send_importance
+        send_importance,
+        send_classificator,
+        send_urgency,
+        send_description,
+        send_effect,
+        send_naming,
+        send_solution,
+        send_reason,
+        concern_send
     )
 
 

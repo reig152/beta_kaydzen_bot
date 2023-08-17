@@ -34,8 +34,8 @@ def main_menu_kb() -> InlineKeyboardButton:
               callback_data=st.type_effect)
     kb.button(text=st.type_reason,
               callback_data=st.type_reason)
-    kb.button(text=st.type_reason,
-              callback_data=st.type_reason)
+    kb.button(text=st.type_solution,
+              callback_data=st.type_solution)
     kb.button(text=st.finish_approve,
               callback_data=st.finish_approve)
     

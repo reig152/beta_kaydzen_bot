@@ -21,3 +21,4 @@ REDIS_URL = env("REDIS_URL", cast=str, default="redis://localhost:6379")
 PARSED_URL = urlparse(REDIS_URL)
 REDIS_HOST = PARSED_URL.hostname
 REDIS_PASS = PARSED_URL.password
+#

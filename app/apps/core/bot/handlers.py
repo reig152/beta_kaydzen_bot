@@ -79,8 +79,8 @@ async def get_concern_status(message: Message, state: FSMContext):
             )
 
 
-# добавить хендлер с кнопкой главного меню
 #
+# добавить хендлер с кнопкой главного меню
 @router.callback_query(
         SendConcern.at_main_menu,
         Text(st.concern_create)

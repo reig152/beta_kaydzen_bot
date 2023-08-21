@@ -15,7 +15,7 @@ from app.apps.core.bot.send_naming import router as send_naming
 from app.apps.core.bot.send_solution import router as send_solution
 from app.apps.core.bot.send_reason import router as send_reason
 from app.apps.core.bot.concern_send import router as concern_send
-from app.config.bot import RUNNING_MODE, TG_TOKEN, RunningMode, REDIS_HOST, REDIS_PASS
+from app.config.bot import RUNNING_MODE, TG_TOKEN, RunningMode
 
 bot = Bot(TG_TOKEN, parse_mode="HTML")
 # redis: Redis = Redis(host=REDIS_HOST, password=REDIS_PASS)

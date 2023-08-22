@@ -60,7 +60,6 @@ async def _set_bot_commands() -> None:
 async def on_startup() -> None:
     # Register all routers
     _register_routers()
-    logger.info("Routers registered")
 
     # Set default commands
     await _set_bot_commands()
@@ -71,18 +70,10 @@ async def on_startup() -> None:
         await bot.set_webhook(
             webhook_uri
         )
-        logger.info("Bot started")
 
 
 def run_polling() -> None:
     dispatcher.run_polling(bot)
-
-
-# async def set_webhook():
-#     webhook_uri = f'{WEBHOOK_URL}{webhook_path}'
-#     await bot.set_webhook(
-#         webhook_uri
-#     )
 
 
 async def handle_webhook(request):
@@ -105,7 +96,6 @@ def run_webhook() -> None:
         host='0.0.0.0', 
         port=8000
     )
-    logger.info("started aio server")
 
 
 if __name__ == "__main__":

@@ -96,7 +96,6 @@ def setup_routes(app):
 
 
 def run_webhook() -> None:
-    app.on_startup.append(on_startup)
     setup_routes(app)
 
     web.run_app(

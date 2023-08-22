@@ -65,18 +65,22 @@ async def on_startup() -> None:
     await _set_bot_commands()
 
     if RUNNING_MODE == RunningMode.WEBHOOK:
-        await set_webhook()
+        # await set_webhook()
+        webhook_uri = f'{WEBHOOK_URL}{webhook_path}'
+        await bot.set_webhook(
+            webhook_uri
+        )
 
 
 def run_polling() -> None:
     dispatcher.run_polling(bot)
 
 
-async def set_webhook():
-    webhook_uri = f'{WEBHOOK_URL}{webhook_path}'
-    await bot.set_webhook(
-        webhook_uri
-    )
+# async def set_webhook():
+#     webhook_uri = f'{WEBHOOK_URL}{webhook_path}'
+#     await bot.set_webhook(
+#         webhook_uri
+#     )
 
 
 async def handle_webhook(request):
@@ -91,12 +95,8 @@ async def handle_webhook(request):
         return web.Response(status=403)
 
 
-def setup_routes(app):
-    app.router.add_post(f'/{TG_TOKEN}', handle_webhook)
-
-
 def run_webhook() -> None:
-    setup_routes(app)
+    app.router.add_post(f'/{TG_TOKEN}', handle_webhook)
 
     web.run_app(
         app, 

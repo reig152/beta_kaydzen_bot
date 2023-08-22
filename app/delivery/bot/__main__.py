@@ -16,7 +16,7 @@ from app.apps.core.bot.send_naming import router as send_naming
 from app.apps.core.bot.send_solution import router as send_solution
 from app.apps.core.bot.send_reason import router as send_reason
 from app.apps.core.bot.concern_send import router as concern_send
-from app.config.bot import RUNNING_MODE, TG_TOKEN, RunningMode
+from app.config.bot import RUNNING_MODE, TG_TOKEN, WEBHOOK_URL, RunningMode
 
 bot = Bot(TG_TOKEN, parse_mode="HTML")
 # redis: Redis = Redis(host=REDIS_HOST, password=REDIS_PASS)
@@ -73,7 +73,7 @@ def run_polling() -> None:
 
 
 async def set_webhook():
-    webhook_uri = f'https://925e-180-232-84-202.ap.ngrok.io{webhook_path}'
+    webhook_uri = f'{WEBHOOK_URL}{webhook_path}'
     await bot.set_webhook(
         webhook_uri
     )

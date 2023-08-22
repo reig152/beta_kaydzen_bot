@@ -60,6 +60,7 @@ async def _set_bot_commands() -> None:
 async def on_startup() -> None:
     # Register all routers
     _register_routers()
+    logger.info("Routers registered")
 
     # Set default commands
     await _set_bot_commands()
@@ -70,6 +71,7 @@ async def on_startup() -> None:
         await bot.set_webhook(
             webhook_uri
         )
+        logger.info("Bot started")
 
 
 def run_polling() -> None:
@@ -89,7 +91,7 @@ async def handle_webhook(request):
     token = url[index+1:]
     if token == TG_TOKEN:
         update = types.Update(**await request.json())
-        await dispatcher.process_update(update)
+        await dispatcher._process_update(update)
         return web.Response()
     else:
         return web.Response(status=403)
@@ -103,6 +105,7 @@ def run_webhook() -> None:
         host='0.0.0.0', 
         port=8000
     )
+    logger.info("started aio server")
 
 
 if __name__ == "__main__":

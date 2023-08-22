@@ -1,6 +1,7 @@
 import logging
 
-from aiogram import Bot, Dispatcher
+from aiohttp import web
+from aiogram import Bot, Dispatcher, types
 from aiogram.types import BotCommand
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.fsm.storage.redis import RedisStorage, Redis
@@ -22,6 +23,10 @@ bot = Bot(TG_TOKEN, parse_mode="HTML")
 storage: MemoryStorage = MemoryStorage()
 
 dispatcher = Dispatcher(storage=storage)
+
+app = web.Application()
+webhook_path = f'/{TG_TOKEN}'
+
 logging.basicConfig(level=logging.INFO)
 
 logger = logging.getLogger(__name__)
@@ -59,13 +64,46 @@ async def on_startup() -> None:
     # Set default commands
     await _set_bot_commands()
 
+    if RUNNING_MODE == RunningMode.WEBHOOK:
+        await set_webhook()
+
 
 def run_polling() -> None:
     dispatcher.run_polling(bot)
 
 
+async def set_webhook():
+    webhook_uri = f'https://925e-180-232-84-202.ap.ngrok.io{webhook_path}'
+    await bot.set_webhook(
+        webhook_uri
+    )
+
+
+async def handle_webhook(request):
+    url = str(request.url)
+    index = url.rfind('/')
+    token = url[index+1:]
+    if token == TG_TOKEN:
+        update = types.Update(**await request.json())
+        await dispatcher.process_update(update)
+        return web.Response()
+    else:
+        return web.Response(status=403)
+
+
+def setup_routes(app):
+    app.router.add_post(f'/{TG_TOKEN}', handle_webhook)
+
+
 def run_webhook() -> None:
-    raise NotImplementedError("Webhook mode is not implemented yet")
+    app.on_startup.append(on_startup)
+    setup_routes(app)
+
+    web.run_app(
+        app, 
+        host='0.0.0.0', 
+        port=8000
+    )
 
 
 if __name__ == "__main__":

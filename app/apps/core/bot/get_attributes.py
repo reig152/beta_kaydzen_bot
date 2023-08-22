@@ -1,4 +1,4 @@
-from app.apps.handling_concerns.models import ConcernUrgency, Concerns
+from app.apps.handling_concerns.models import Concerns
 from django.apps import apps
 
 

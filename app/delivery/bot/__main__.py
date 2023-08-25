@@ -24,7 +24,6 @@ storage: MemoryStorage = MemoryStorage()
 
 dispatcher = Dispatcher(storage=storage)
 
-app = web.Application()
 webhook_path = f'/{TG_TOKEN}'
 
 logging.basicConfig(level=logging.INFO)
@@ -89,6 +88,8 @@ async def handle_webhook(request):
 
 
 def run_webhook() -> None:
+    app = web.Application()
+
     app.router.add_post(f'{webhook_path}', handle_webhook)
 
     web.run_app(

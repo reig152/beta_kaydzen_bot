@@ -92,11 +92,12 @@ def run_webhook() -> None:
 
     app.router.add_post(f'{webhook_path}', handle_webhook)
 
-    web.run_app(
-        app, 
-        host='0.0.0.0', 
-        port=8000
-    )
+    return app
+    # web.run_app(
+    #     app, 
+    #     host='0.0.0.0', 
+    #     port=8000
+    # )
 
 
 if __name__ == "__main__":

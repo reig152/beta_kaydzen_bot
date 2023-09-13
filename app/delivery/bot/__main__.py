@@ -3,8 +3,7 @@ import logging
 from aiohttp import web
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import BotCommand
-from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram.fsm.storage.redis import RedisStorage, Redis
+from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 
 from app.apps.core.bot.handlers import router as core_router
 from app.apps.core.bot.send_importance import router as send_importance
@@ -16,15 +15,15 @@ from app.apps.core.bot.send_naming import router as send_naming
 from app.apps.core.bot.send_solution import router as send_solution
 from app.apps.core.bot.send_reason import router as send_reason
 from app.apps.core.bot.concern_send import router as concern_send
-from app.config.bot import RUNNING_MODE, TG_TOKEN, WEBHOOK_URL, RunningMode
+from app.config.bot import (RUNNING_MODE, TG_TOKEN,
+                            RunningMode,
+                            WEB_SERVER_HOST, WEB_SERVER_PORT,
+                            WEBHOOK_PATH, BASE_WEBHOOK_URL)
+
 
 bot = Bot(TG_TOKEN, parse_mode="HTML")
-# redis: Redis = Redis(host=REDIS_HOST, password=REDIS_PASS)
-storage: MemoryStorage = MemoryStorage()
 
-dispatcher = Dispatcher(storage=storage)
-
-webhook_path = f'/{TG_TOKEN}'
+dp = Dispatcher()
 
 logging.basicConfig(level=logging.INFO)
 
@@ -32,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 def _register_routers() -> None:
-    dispatcher.include_routers(
+    dp.include_routers(
         core_router,
         send_importance,
         send_classificator,
@@ -55,52 +54,37 @@ async def _set_bot_commands() -> None:
     )
 
 
-@dispatcher.startup()
-async def on_startup() -> None:
-    # Register all routers
+async def on_startup(bot: Bot) -> None:
     _register_routers()
 
-    # Set default commands
     await _set_bot_commands()
 
     if RUNNING_MODE == RunningMode.WEBHOOK:
-        # await set_webhook()
-        webhook_uri = f'{WEBHOOK_URL}{webhook_path}'
-        await bot.set_webhook(
-            webhook_uri
-        )
+        await bot.set_webhook(f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}")
 
 
 def run_polling() -> None:
-    dispatcher.run_polling(bot)
-
-
-async def handle_webhook(request):
-    url = str(request.url)
-    index = url.rfind('/')
-    token = url[index+1:]
-    if token == TG_TOKEN:
-        update = types.Update(**await request.json())
-        await dispatcher._process_update(update)
-        return web.Response()
-    else:
-        return web.Response(status=403)
+    dp.run_polling(bot)
 
 
 def run_webhook() -> None:
     app = web.Application()
 
-    app.router.add_post(f'{webhook_path}', handle_webhook)
+    webhook_requests_handler = SimpleRequestHandler(
+        dispatcher=dp,
+        bot=bot,
+    )
+    webhook_requests_handler.register(app, path=WEBHOOK_PATH)
+    setup_application(app, dp, bot=bot)
 
-    return app
-    # web.run_app(
-    #     app, 
-    #     host='0.0.0.0', 
-    #     port=8000
-    # )
+    web.run_app(app, host=WEB_SERVER_HOST, port=WEB_SERVER_PORT)
+
 
 
 if __name__ == "__main__":
+    dp.startup.register(on_startup)
+
+
     if RUNNING_MODE == RunningMode.LONG_POLLING:
         run_polling()
     elif RUNNING_MODE == RunningMode.WEBHOOK:

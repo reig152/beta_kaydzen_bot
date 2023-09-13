@@ -1,7 +1,0 @@
-{
-    "scripts": {
-      "dokku": {
-        "predeploy": "mkdir -p /app/logs && touch /app/logs/access.log /app/logs/error.log"
-      }
-    }
-  }
